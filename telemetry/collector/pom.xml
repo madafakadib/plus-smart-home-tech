@@ -50,7 +50,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <mainClass>telemetry.collector.TelemetryCollectorApp</mainClass>
+                    <mainClass>ru.yandex.practicum.telemetry.collector.TelemetryCollectorApp</mainClass>
                 </configuration>
             </plugin>
 
