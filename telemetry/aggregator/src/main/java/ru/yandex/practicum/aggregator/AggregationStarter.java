@@ -37,18 +37,7 @@ public class AggregationStarter {
         this.producer = producer;
         this.snapshotService = snapshotService;
 
-        Properties configConsum = new Properties();
-        configConsum.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
-        configConsum.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        configConsum.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, SensorEventDeserializer.class);
-
-        Properties configProduc = new Properties();
-        configProduc.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
-        configProduc.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        configProduc.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, GeneralAvroSerializer.class);
-
     }
-
 
     /**
      * Метод для начала процесса агрегации данных.
