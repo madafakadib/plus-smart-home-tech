@@ -58,6 +58,7 @@ public class SnapshotProcessor{
         String hubId = snapshot.getHubId();
         List<Scenario> scenarios = scenarioRepository.findByHubId(hubId);
 
+
         for (Scenario scenario : scenarios) {
             if (checkConditions(scenario, snapshot)) {
                 executeActions(scenario);
@@ -76,6 +77,8 @@ public class SnapshotProcessor{
             if (state == null) return false;
 
             Integer currentValue = getSensorValue(state.getData(), condition.getType());
+            log.info("Датчик: {}, Тип условия: {}, Текущее значение: {}, Ожидаемое: {} {}",
+                    sensorId, condition.getType(), currentValue, condition.getOperation(), condition.getValue());
 
             return checkCondition(condition, currentValue);
         });
@@ -86,9 +89,9 @@ public class SnapshotProcessor{
         if (sensorValue == null) return false;
 
         return switch (condition.getOperation().toUpperCase()) {
-            case "EQUALS" -> sensorValue.equals(condition.getValue());
-            case "GREATER_THAN" -> sensorValue > condition.getValue();
-            case "LOWER_THAN" -> sensorValue < condition.getValue();
+            case "EQUALS", "0" -> sensorValue.equals(condition.getValue());
+            case "GREATER_THAN", "1" -> sensorValue > condition.getValue();
+            case "LOWER_THAN", "2" -> sensorValue < condition.getValue();
             default -> false;
         };
     }
@@ -113,7 +116,8 @@ public class SnapshotProcessor{
         }
 
         if (payload instanceof SwitchSensorAvro sw) {
-            return "STATE".equalsIgnoreCase(conditionType) ? (sw.getState() ? 1 : 0) : null;
+            return ("STATE".equalsIgnoreCase(conditionType) || "SWITCH".equalsIgnoreCase(conditionType))
+                    ? (sw.getState() ? 1 : 0) : null;
         }
 
         if (payload instanceof TemperatureSensorAvro temp) {
