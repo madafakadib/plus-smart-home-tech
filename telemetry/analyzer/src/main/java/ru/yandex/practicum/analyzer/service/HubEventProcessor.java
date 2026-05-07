@@ -105,7 +105,15 @@ public class HubEventProcessor implements Runnable {
             for (DeviceActionAvro actionAvro : scenarioAdded.getActions()) {
                 Action action = new Action();
                 action.setType(actionAvro.getType().name());
-                action.setValue(actionAvro.getValue());
+                if (actionAvro.getValue() != null) {
+                    action.setValue(actionAvro.getValue());
+                } else {
+                    if ("ACTIVATE".equalsIgnoreCase(actionAvro.getType().name())) {
+                        action.setValue(1);
+                    } else {
+                        action.setValue(0);
+                    }
+                }
                 action = actionRepository.save(action);
 
                 Sensor sensor = sensorRepository.findById(actionAvro.getSensorId())
