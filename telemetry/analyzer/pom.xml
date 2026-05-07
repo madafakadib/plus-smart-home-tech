@@ -84,7 +84,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <mainClass>ru.yandex.practicum.telemetry.collector.TelemetryCollectorApp</mainClass>
+                    <mainClass>ru.yandex.practicum.analyzer.Analyzer</mainClass>
                 </configuration>
             </plugin>
 
