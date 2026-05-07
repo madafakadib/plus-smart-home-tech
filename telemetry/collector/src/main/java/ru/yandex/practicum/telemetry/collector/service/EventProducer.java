@@ -28,7 +28,11 @@ public class EventProducer {
 
     public void send(String topic, String key, SpecificRecordBase event) {
         ProducerRecord<String, SpecificRecordBase> record = new ProducerRecord<>(topic, key, event);
-        producer.send(record);
+        try {
+            producer.send(record).get();
+        } catch (Exception e) {
+            throw new RuntimeException("Ошибка при синхронной отправке в Kafka", e);
+        }
     }
 
     @PreDestroy

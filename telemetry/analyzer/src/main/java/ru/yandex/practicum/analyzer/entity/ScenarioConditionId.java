@@ -1,0 +1,16 @@
+package ru.yandex.practicum.analyzer.entity;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.io.Serializable;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class ScenarioConditionId implements Serializable {
+    private Long scenario;
+    private String sensor;
+    private Long condition;
+}
