@@ -12,7 +12,11 @@ import ru.yandex.practicum.analyzer.repository.*;
 import ru.yandex.practicum.kafka.telemetry.event.*;
 
 import java.time.Duration;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -64,7 +68,7 @@ public class HubEventProcessor implements Runnable {
     }
 
     @Transactional
-    private void processEvent(HubEventAvro event) {
+    protected void processEvent(HubEventAvro event) {
         if (event.getPayload() instanceof DeviceAddedEventAvro deviceAdded) {
             Sensor sensor = new Sensor();
             sensor.setId(deviceAdded.getId());
@@ -75,6 +79,9 @@ public class HubEventProcessor implements Runnable {
             sensorRepository.deleteById(deviceRemoved.getId());
         }
         if (event.getPayload() instanceof ScenarioAddedEventAvro scenarioAdded) {
+
+            Map<String, Sensor> sensorsCache = getSensorsMap(scenarioAdded);
+
             Scenario scenario = new Scenario();
             scenario.setHubId(event.getHubId());
             scenario.setName(scenarioAdded.getName());
@@ -92,8 +99,8 @@ public class HubEventProcessor implements Runnable {
                 }
                 condition = conditionRepository.save(condition);
 
-                Sensor sensor = sensorRepository.findById(condAvro.getSensorId())
-                        .orElseThrow(() -> new RuntimeException("Sensor not found"));
+                Sensor sensor = sensorsCache.get(condAvro.getSensorId());
+                if (sensor == null) throw new RuntimeException("Sensor not found");
 
                 ScenarioCondition sc = new ScenarioCondition();
                 sc.setScenario(scenario);
@@ -116,8 +123,8 @@ public class HubEventProcessor implements Runnable {
                 }
                 action = actionRepository.save(action);
 
-                Sensor sensor = sensorRepository.findById(actionAvro.getSensorId())
-                        .orElseThrow(() -> new RuntimeException("Sensor not found"));
+                Sensor sensor = sensorsCache.get(actionAvro.getSensorId());
+                if (sensor == null) throw new RuntimeException("Sensor not found");
 
                 ScenarioAction sa = new ScenarioAction();
                 sa.setScenario(scenario);
@@ -129,5 +136,15 @@ public class HubEventProcessor implements Runnable {
         if (event.getPayload() instanceof ScenarioRemovedEventAvro scenarioRemoved) {
             scenarioRepository.findByHubIdAndName(event.getHubId(), scenarioRemoved.getName()).ifPresent(scenarioRepository::delete);
         }
+    }
+
+    private Map<String, Sensor> getSensorsMap(ScenarioAddedEventAvro scenarioAdded) {
+        Set<String> allSensorIds = new HashSet<>();
+        scenarioAdded.getConditions().forEach(c -> allSensorIds.add(c.getSensorId()));
+        scenarioAdded.getActions().forEach(a -> allSensorIds.add(a.getSensorId()));
+
+        return sensorRepository.findAllById(allSensorIds)
+                .stream()
+                .collect(Collectors.toMap(Sensor::getId, s -> s));
     }
 }
