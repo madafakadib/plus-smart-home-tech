@@ -5,6 +5,7 @@ import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.server.service.GrpcService;
 import ru.yandex.practicum.grpc.telemetry.collector.CollectorControllerGrpc;
 import ru.yandex.practicum.grpc.telemetry.event.HubEventProto;
@@ -13,6 +14,7 @@ import ru.yandex.practicum.telemetry.collector.mapper.HubEventMapper;
 import ru.yandex.practicum.telemetry.collector.mapper.SensorEventMapper;
 import ru.yandex.practicum.telemetry.collector.service.EventProducer;
 
+@Slf4j
 @GrpcService
 @RequiredArgsConstructor
 public class EventController extends CollectorControllerGrpc.CollectorControllerImplBase {
@@ -24,6 +26,7 @@ public class EventController extends CollectorControllerGrpc.CollectorController
     @Override
     public void collectSensorEvent(SensorEventProto request, StreamObserver<Empty> responseObserver) {
         try {
+            log.info("Collector отправляет в топик {}: {}", "telemetry.sensors.v1", request);
             eventProducer.send("telemetry.sensors.v1", request.getHubId(), sensorEventMapper.mapToAvro(request));
             responseObserver.onNext(Empty.getDefaultInstance());
             responseObserver.onCompleted();
@@ -40,6 +43,8 @@ public class EventController extends CollectorControllerGrpc.CollectorController
     public void collectHubEvent(HubEventProto request,
                                 StreamObserver<Empty> responseObserver) {
         try {
+
+            log.info("Collector отправляет в топик {}: {}", "telemetry.hubs.v1", request);
             eventProducer.send("telemetry.hubs.v1", request.getHubId(), hubEventMapper.mapToAvro(request));
             responseObserver.onNext(Empty.getDefaultInstance());
             responseObserver.onCompleted();
