@@ -7,6 +7,6 @@ collector:
     bootstrap-servers: "localhost:9092"
     producer:
       properties:
-        "bootstrap.servers": ${collector.kafka.bootstrap-servers}
+        bootstrap.servers: ${collector.kafka.bootstrap-servers}
         "key.serializer": "org.apache.kafka.common.serialization.StringSerializer"
         "value.serializer": "ru.yandex.practicum.kafka.serializer.GeneralAvroSerializer"
