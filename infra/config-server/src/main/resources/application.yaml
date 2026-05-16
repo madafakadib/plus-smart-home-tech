@@ -1,3 +1,14 @@
+logging:
+  level:
+    ru.yandex.practicum.telemetry: TRACE
+    org:
+      springframework: ERROR
+      springframework.cloud.netflix.eureka: INFO
+      apache.kafka: WARN
+
+server:
+  port: 0
+
 spring:
   application:
     name: config-server
@@ -9,5 +20,8 @@ spring:
         native:
           searchLocations:
             - classpath:config/telemetry/{application}
-server:
-  port: 8888
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
