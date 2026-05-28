@@ -45,7 +45,7 @@ analyzer:
         "key.deserializer": "org.apache.kafka.common.serialization.StringDeserializer"
         "value.deserializer": "ru.yandex.practicum.kafka.deserializer.HubEventDeserializer"
     snapshots:
-      topic: "telemetry.snapsot.v1"
+      topic: "telemetry.snapshot.v1"
       properties:
         "bootstrap.servers": ${analyzer.kafka.bootstrap-servers}
         "group.id": "analyzer-snapshots-group"

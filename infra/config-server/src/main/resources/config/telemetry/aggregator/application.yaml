@@ -13,7 +13,7 @@ aggregator:
       properties:
         "bootstrap.servers": ${aggregator.kafka.bootstrap-server}
         "key.serializer": "org.apache.kafka.common.serialization.StringSerializer"
-      topic: "telemetry.snapsot.v1"
+      topic: "telemetry.snapshot.v1"
 
     consumer:
       properties:
