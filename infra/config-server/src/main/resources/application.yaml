@@ -1,6 +1,6 @@
 logging:
   level:
-    ru.yandex.practicum.telemetry: TRACE
+    ru.yandex.practicum.commerce: TRACE
     org:
       springframework: ERROR
       springframework.cloud.netflix.eureka: INFO
@@ -20,6 +20,7 @@ spring:
         native:
           searchLocations:
             - classpath:config/telemetry/{application}
+            - classpath:config/commerce/{application}
 
 eureka:
   client:
