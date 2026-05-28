@@ -7,14 +7,14 @@
           <package value="ru.yandex.practicum.analyzer" />
         </packages>
       </persistence-unit>
-      <persistence-unit moduleName="shopping-store" name="Default">
-        <packages>
-          <package value="ru.yandex.practicum.shopping_store" />
-        </packages>
-      </persistence-unit>
       <persistence-unit moduleName="shopping-cart" name="Default">
         <packages>
           <package value="ru.yandex.practicum.shopping_cart" />
+        </packages>
+      </persistence-unit>
+      <persistence-unit moduleName="shopping-store" name="Default">
+        <packages>
+          <package value="ru.yandex.practicum.shopping_store" />
         </packages>
       </persistence-unit>
       <persistence-unit moduleName="warehouse" name="Default">
