@@ -5,7 +5,8 @@ aggregator:
       properties:
         "bootstrap.servers": ${aggregator.kafka.bootstrap-server}
         "key.serializer": org.apache.kafka.common.serialization.StringSerializer
-      topic: telemetry.snapshot.v1
+        "value.serializer": ru.yandex.practicum.kafka.serializer.GeneralAvroSerializer
+      topic: telemetry.snapshots.v1
 
     consumer:
       properties:
@@ -13,5 +14,6 @@ aggregator:
         "enable.auto.commit": false
         "group.id": telemetry.aggregator.sensors
         "key.deserializer": org.apache.kafka.common.serialization.StringDeserializer
-      topic: telemetry.sensor.v1
+        "value.deserializer": ru.yandex.practicum.kafka.deserializer.SensorEventDeserializer
+      topic: telemetry.sensors.v1
       pool-timeout: 100ms
