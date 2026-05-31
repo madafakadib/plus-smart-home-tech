@@ -3,26 +3,10 @@ grpc:
     port: 59091
 
 spring:
-  application:
-    name: collector
-
-  config:
-    import: "optional:configserver:"
   cloud:
     config:
       enabled: false
-      import-check:
-        enabled: false
 
 eureka:
   client:
     enabled: false
-
-collector:
-  kafka:
-    bootstrap-servers: localhost:9092
-    producer:
-      properties:
-        bootstrap.servers: ${collector.kafka.bootstrap-servers}
-        key.serializer: org.apache.kafka.common.serialization.StringSerializer
-        value.serializer: ru.yandex.practicum.kafka.serializer.GeneralAvroSerializer
