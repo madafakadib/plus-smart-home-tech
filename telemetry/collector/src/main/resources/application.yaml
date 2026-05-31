@@ -1,30 +1,19 @@
 spring:
   application:
     name: collector
+  config:
+    import: "configserver:"
   cloud:
     config:
-      enabled: false
-      fail-fast: false
+      fail-fast: true
+      discovery:
+        service-id: config-server
+        enabled: true
+      retry:
+        use-random-policy: true
+        max-interval: 6000
 
 eureka:
   client:
-    enabled: false
-
-grpc:
-  server:
-    port: 59091
-
-collector:
-  kafka:
-    bootstrap-servers: "localhost:9092"
-    producer:
-      properties:
-        "bootstrap.servers": "localhost:9092"
-        "key.serializer": "org.apache.kafka.common.serialization.StringSerializer"
-        "value.serializer": "ru.yandex.practicum.kafka.serializer.GeneralAvroSerializer"
-
-logging:
-  level:
-    ru.yandex.practicum.telemetry: TRACE
-    org:
-      springframework: ERROR
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/

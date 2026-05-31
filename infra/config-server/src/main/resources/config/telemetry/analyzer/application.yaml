@@ -1,11 +1,3 @@
-logging:
-  level:
-    ru.yandex.practicum.telemetry: TRACE
-    org:
-      springframework: ERROR
-      springframework.cloud.netflix.eureka: INFO
-      apache.kafka: WARN
-
 grpc:
   client:
     hub-router:
@@ -35,20 +27,20 @@ spring:
 
 analyzer:
   kafka:
-    bootstrap-servers: "localhost:9092"
+    bootstrap-servers: localhost:9092
     hubs:
-      topic: "telemetry.hub.v1"
+      topic: telemetry.hub.v1
       properties:
         "bootstrap.servers": ${analyzer.kafka.bootstrap-servers}
-        "group.id": "analyzer-hubs-group"
-        "auto.offset.reset": "earliest"
-        "key.deserializer": "org.apache.kafka.common.serialization.StringDeserializer"
-        "value.deserializer": "ru.yandex.practicum.kafka.deserializer.HubEventDeserializer"
+        "group.id": analyzer-hubs-group
+        "auto.offset.reset": earliest
+        "key.deserializer": org.apache.kafka.common.serialization.StringDeserializer
+        "value.deserializer": ru.yandex.practicum.kafka.deserializer.HubEventDeserializer
     snapshots:
-      topic: "telemetry.snapshot.v1"
+      topic: telemetry.snapshot.v1
       properties:
         "bootstrap.servers": ${analyzer.kafka.bootstrap-servers}
-        "group.id": "analyzer-snapshots-group"
-        "auto.offset.reset": "earliest"
-        "key.deserializer": "org.apache.kafka.common.serialization.StringDeserializer"
-        "value.deserializer": "ru.yandex.practicum.kafka.deserializer.SnapshotDeserializer"
+        "group.id": analyzer-snapshots-group
+        "auto.offset.reset": earliest
+        "key.deserializer": org.apache.kafka.common.serialization.StringDeserializer
+        "value.deserializer": ru.yandex.practicum.kafka.deserializer.SnapshotDeserializer
