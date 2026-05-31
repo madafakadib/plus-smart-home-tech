@@ -3,9 +3,18 @@ grpc:
     port: 59091
 
 
-#spring:
-#  application:
-#    name: collector
+spring:
+  application:
+    name: collector
+
+    cloud:
+      config:
+        enabled: false
+
+    # Если Eureka локально тоже не запущена, её тоже можно временно отключить:
+eureka:
+  client:
+    enabled: false
 #  config:
 #    import: "configserver:"
 #  cloud:
