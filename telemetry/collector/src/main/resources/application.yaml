@@ -2,41 +2,27 @@ grpc:
   server:
     port: 59091
 
-
 spring:
   application:
     name: collector
 
-    cloud:
-      config:
+  config:
+    import: "optional:configserver:"
+  cloud:
+    config:
+      enabled: false
+      import-check:
         enabled: false
 
-    # Если Eureka локально тоже не запущена, её тоже можно временно отключить:
 eureka:
   client:
     enabled: false
-#  config:
-#    import: "configserver:"
-#  cloud:
-#    config:
-#      fail-fast: true
-#      discovery:
-#        service-id: config-server
-#        enabled: true
-#      retry:
-#        use-random-policy: true
-#        max-interval: 6000
-#
-#eureka:
-#  client:
-#    serviceUrl:
-#      defaultZone: http://localhost:8761/eureka/
 
 collector:
   kafka:
     bootstrap-servers: localhost:9092
     producer:
       properties:
-        "bootstrap.servers": ${collector.kafka.bootstrap-servers}
-        "key.serializer": org.apache.kafka.common.serialization.StringSerializer
-        "value.serializer": ru.yandex.practicum.kafka.serializer.GeneralAvroSerializer
+        bootstrap.servers: ${collector.kafka.bootstrap-servers}
+        key.serializer: org.apache.kafka.common.serialization.StringSerializer
+        value.serializer: ru.yandex.practicum.kafka.serializer.GeneralAvroSerializer
