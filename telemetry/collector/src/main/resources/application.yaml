@@ -3,22 +3,31 @@ grpc:
     port: 59091
 
 
-spring:
-  application:
-    name: collector
-  config:
-    import: "configserver:"
-  cloud:
-    config:
-      fail-fast: true
-      discovery:
-        service-id: config-server
-        enabled: true
-      retry:
-        use-random-policy: true
-        max-interval: 6000
+#spring:
+#  application:
+#    name: collector
+#  config:
+#    import: "configserver:"
+#  cloud:
+#    config:
+#      fail-fast: true
+#      discovery:
+#        service-id: config-server
+#        enabled: true
+#      retry:
+#        use-random-policy: true
+#        max-interval: 6000
+#
+#eureka:
+#  client:
+#    serviceUrl:
+#      defaultZone: http://localhost:8761/eureka/
 
-eureka:
-  client:
-    serviceUrl:
-      defaultZone: http://localhost:8761/eureka/
+collector:
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      properties:
+        "bootstrap.servers": ${collector.kafka.bootstrap-servers}
+        "key.serializer": org.apache.kafka.common.serialization.StringSerializer
+        "value.serializer": ru.yandex.practicum.kafka.serializer.GeneralAvroSerializer
