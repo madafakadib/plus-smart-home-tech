@@ -1,24 +1,23 @@
 package ru.yandex.practicum.api.exception;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.util.Collections;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(BaseApiException.class)
-    public ResponseEntity<ApiException> handleBaseApiException(BaseApiException ex) {
-        ApiException errorBody = ApiException.builder()
-                .cause(ex.getCause())
-                .stackTrace(ex.getStackTrace())
-                .httpStatus(ex.getHttpStatus().name())
+    public ApiException handleBaseApiException(BaseApiException ex) {
+
+        return ApiException.builder()
                 .userMessage(ex.getUserMessage())
                 .message(ex.getMessage())
-                .suppressed(ex.getSuppressed())
                 .localizedMessage(ex.getLocalizedMessage())
+                .suppressed(Collections.emptyList())
+                .cause(null)
+                .stackTrace(Collections.emptyList())
                 .build();
-
-        return ResponseEntity.status(ex.getHttpStatus()).body(errorBody);
     }
 }

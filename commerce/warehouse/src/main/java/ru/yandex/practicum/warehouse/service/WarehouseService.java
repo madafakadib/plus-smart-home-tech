@@ -16,6 +16,8 @@ import ru.yandex.practicum.warehouse.repository.WarehouseRepository;
 
 import java.security.SecureRandom;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class WarehouseService {
@@ -61,17 +63,19 @@ public class WarehouseService {
         double totalVolume = 0.0;
         boolean hasFragile = false;
 
+        Set<String> productIds = shoppingCart.getProducts().keySet();
+        List<WarehouseProduct> dbProducts = warehouseRepository.findAllById(productIds);
+        Map<String, WarehouseProduct> warehouseProductMap = dbProducts.stream()
+                .collect(Collectors.toMap(WarehouseProduct::getProductId, Function.identity()));
+
         for (Map.Entry<String, Integer> item : shoppingCart.getProducts().entrySet()) {
             String productId = item.getKey();
             Integer requestedQuantity = item.getValue();
 
-            Optional<WarehouseProduct> productOpt = warehouseRepository.findById(productId);
-
-            if (productOpt.isEmpty() || productOpt.get().getQuantity() < requestedQuantity) {
+            WarehouseProduct product = warehouseProductMap.get(productId);
+            if (product == null || product.getQuantity() < requestedQuantity) {
                 missingProducts.add(productId);
             } else {
-                WarehouseProduct product = productOpt.get();
-
                 totalWeight += product.getWeight() * requestedQuantity;
 
                 double singleVolume = product.getDimension().getWidth()

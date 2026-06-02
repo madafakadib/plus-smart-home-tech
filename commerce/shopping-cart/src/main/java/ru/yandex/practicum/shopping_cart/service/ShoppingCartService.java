@@ -1,10 +1,10 @@
 package ru.yandex.practicum.shopping_cart.service;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.api.shoppingcart.ChangeProductQuantityRequest;
 import ru.yandex.practicum.api.shoppingcart.ShoppingCartDto;
-import ru.yandex.practicum.api.shoppingstore.ProductDto;
 import ru.yandex.practicum.shopping_cart.entity.CartItem;
 import ru.yandex.practicum.shopping_cart.entity.ShoppingCart;
 import ru.yandex.practicum.shopping_cart.exception.NoProductsInShoppingCartException;
@@ -19,17 +19,11 @@ import java.util.UUID;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class ShoppingCartService {
 
     private final ShoppingCartRepository shoppingCartRepository;
-    private final ProductServiceClient productServiceClient;
     private final WarehouseServiceClient warehouseServiceClient;
-
-    public ShoppingCartService(ShoppingCartRepository shoppingCartRepository, ProductServiceClient productServiceClient, WarehouseServiceClient warehouseServiceClient) {
-        this.shoppingCartRepository = shoppingCartRepository;
-        this.productServiceClient = productServiceClient;
-        this.warehouseServiceClient = warehouseServiceClient;
-    }
 
     public ShoppingCartDto getCart(String username) {
         ShoppingCart cart = shoppingCartRepository.findByUsername(username)

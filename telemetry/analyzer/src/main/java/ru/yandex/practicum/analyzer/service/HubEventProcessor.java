@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.ArrayList;
 
 @Slf4j
 @Component
@@ -75,11 +76,12 @@ public class HubEventProcessor implements Runnable {
             sensor.setHubId(event.getHubId());
             sensorRepository.save(sensor);
         }
+
         if (event.getPayload() instanceof DeviceRemovedEventAvro deviceRemoved) {
             sensorRepository.deleteById(deviceRemoved.getId());
         }
-        if (event.getPayload() instanceof ScenarioAddedEventAvro scenarioAdded) {
 
+        if (event.getPayload() instanceof ScenarioAddedEventAvro scenarioAdded) {
             Map<String, Sensor> sensorsCache = getSensorsMap(scenarioAdded);
 
             Scenario scenario = new Scenario();
@@ -87,17 +89,22 @@ public class HubEventProcessor implements Runnable {
             scenario.setName(scenarioAdded.getName());
             scenario = scenarioRepository.save(scenario);
 
+            List<Condition> conditionsToSave = new ArrayList<>();
+            List<ScenarioCondition> scenarioConditionsToSave = new ArrayList<>();
+
             for (ScenarioConditionAvro condAvro : scenarioAdded.getConditions()) {
                 Condition condition = new Condition();
                 condition.setType(condAvro.getType().name());
                 condition.setOperation(condAvro.getOperation().name());
+
                 Object val = condAvro.getValue();
                 if (val instanceof Boolean) {
                     condition.setValue((Boolean) val ? 1 : 0);
                 } else if (val instanceof Integer) {
                     condition.setValue((Integer) val);
                 }
-                condition = conditionRepository.save(condition);
+
+                conditionsToSave.add(condition);
 
                 Sensor sensor = sensorsCache.get(condAvro.getSensorId());
                 if (sensor == null) throw new RuntimeException("Sensor not found");
@@ -106,8 +113,16 @@ public class HubEventProcessor implements Runnable {
                 sc.setScenario(scenario);
                 sc.setSensor(sensor);
                 sc.setCondition(condition);
-                scenarioConditionRepository.save(sc);
+                scenarioConditionsToSave.add(sc);
             }
+
+            if (!conditionsToSave.isEmpty()) {
+                conditionRepository.saveAll(conditionsToSave);
+                scenarioConditionRepository.saveAll(scenarioConditionsToSave);
+            }
+
+            List<Action> actionsToSave = new ArrayList<>();
+            List<ScenarioAction> scenarioActionsToSave = new ArrayList<>();
 
             for (DeviceActionAvro actionAvro : scenarioAdded.getActions()) {
                 Action action = new Action();
@@ -121,7 +136,7 @@ public class HubEventProcessor implements Runnable {
                         action.setValue(0);
                     }
                 }
-                action = actionRepository.save(action);
+                actionsToSave.add(action);
 
                 Sensor sensor = sensorsCache.get(actionAvro.getSensorId());
                 if (sensor == null) throw new RuntimeException("Sensor not found");
@@ -130,13 +145,21 @@ public class HubEventProcessor implements Runnable {
                 sa.setScenario(scenario);
                 sa.setSensor(sensor);
                 sa.setAction(action);
-                scenarioActionRepository.save(sa);
+                scenarioActionsToSave.add(sa);
+            }
+
+            if (!actionsToSave.isEmpty()) {
+                actionRepository.saveAll(actionsToSave);
+                scenarioActionRepository.saveAll(scenarioActionsToSave);
             }
         }
+
         if (event.getPayload() instanceof ScenarioRemovedEventAvro scenarioRemoved) {
-            scenarioRepository.findByHubIdAndName(event.getHubId(), scenarioRemoved.getName()).ifPresent(scenarioRepository::delete);
+            scenarioRepository.findByHubIdAndName(event.getHubId(), scenarioRemoved.getName())
+                    .ifPresent(scenarioRepository::delete);
         }
     }
+
 
     private Map<String, Sensor> getSensorsMap(ScenarioAddedEventAvro scenarioAdded) {
         Set<String> allSensorIds = new HashSet<>();
