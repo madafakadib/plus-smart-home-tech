@@ -1,5 +1,6 @@
 package ru.yandex.practicum.shopping_store.service;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.api.shoppingstore.*;
@@ -11,13 +12,10 @@ import ru.yandex.practicum.shopping_store.repository.ProductRepository;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class ShoppingStoreService {
 
     private final ProductRepository productRepository;
-
-    public ShoppingStoreService(ProductRepository productRepository) {
-        this.productRepository = productRepository;
-    }
 
     public PageProductDto getProductsByCategory(ProductCategory category, Pageable pageable) {
         var productPage = productRepository.findByProductCategoryAndProductState(category, ProductState.ACTIVE, pageable);

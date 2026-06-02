@@ -1,6 +1,7 @@
 package ru.yandex.practicum.warehouse.service;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.api.shoppingcart.ShoppingCartDto;
 import ru.yandex.practicum.api.warehouse.AddProductToWarehouseRequest;
@@ -20,17 +21,13 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class WarehouseService {
 
     private final WarehouseRepository warehouseRepository;
 
     private static final String[] ADDRESSES = new String[] {"ADDRESS_1", "ADDRESS_2"};
     private static final String CURRENT_ADDRESS = ADDRESSES[Random.from(new SecureRandom()).nextInt(0, ADDRESSES.length)];
-
-
-    public WarehouseService(WarehouseRepository warehouseRepository) {
-        this.warehouseRepository = warehouseRepository;
-    }
 
     public void createProduct(@Valid NewProductInWarehouseRequest request) {
         String productId = request.getProductId();
