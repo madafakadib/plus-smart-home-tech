@@ -1,0 +1,12 @@
+grpc:
+  server:
+    port: 59091
+
+spring:
+  cloud:
+    config:
+      enabled: false
+
+eureka:
+  client:
+    enabled: false
