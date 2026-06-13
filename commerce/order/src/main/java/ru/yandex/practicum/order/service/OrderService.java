@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -47,6 +48,13 @@ public class OrderService {
         order.setShoppingCartId(cart.getShoppingCartId());
         order.setState(OrderState.NEW);
 
+        List<String> productIds = new ArrayList<>(cart.getProducts().keySet());
+
+        List<ProductDto> productsList = shoppingStoreClient.getProductsByIds(productIds);
+
+        Map<String, ProductDto> productsMap = productsList.stream()
+                .collect(Collectors.toMap(ProductDto::getProductId, product -> product));
+
         BigDecimal productPriceSum = BigDecimal.ZERO;
         List<OrderItem> items = new ArrayList<>();
 
@@ -54,9 +62,12 @@ public class OrderService {
             String productId = entry.getKey();
             int quantity = entry.getValue();
 
-            ProductDto productDto = shoppingStoreClient.getProduct(productId);
-            BigDecimal price = productDto.getPrice();
+            ProductDto productDto = productsMap.get(productId);
+            if (productDto == null) {
+                throw new IllegalArgumentException("Продукт с ID " + productId + " не найден в магазине");
+            }
 
+            BigDecimal price = productDto.getPrice();
             productPriceSum = productPriceSum.add(price.multiply(BigDecimal.valueOf(quantity)));
 
             OrderItem item = new OrderItem();
@@ -78,6 +89,7 @@ public class OrderService {
         Order savedOrder = orderRepository.save(order);
         return Mapper.toDto(savedOrder);
     }
+
 
     @Transactional
     public OrderDto handlePaymentError(String orderId) {

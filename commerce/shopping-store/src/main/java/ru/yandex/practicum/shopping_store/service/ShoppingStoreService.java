@@ -9,6 +9,7 @@ import ru.yandex.practicum.shopping_store.exception.ProductNotFoundRuntimeExcept
 import ru.yandex.practicum.shopping_store.mapper.Mapper;
 import ru.yandex.practicum.shopping_store.repository.ProductRepository;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -74,4 +75,15 @@ public class ShoppingStoreService {
                 .orElseThrow(() -> new ProductNotFoundRuntimeException("Product not found with id: " + productId));
         return Mapper.toDto(product);
     }
+
+    public List<ProductDto> findAllByIds(List<String> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+
+        return productRepository.findAllById(ids).stream()
+                .map(Mapper::toDto)
+                .toList();
+    }
+
 }

@@ -101,12 +101,33 @@ public class PaymentService {
     }
 
     private BigDecimal calculateProductsPrice(Map<String, Integer> products) {
-        BigDecimal totalProductsPrice = BigDecimal.ZERO;
-        for (Map.Entry<String, Integer> entry : products.entrySet()) {
-            ProductDto product = shoppingStoreClient.getProduct(entry.getKey());
-            BigDecimal price = product.getPrice();
-            totalProductsPrice = totalProductsPrice.add(price.multiply(BigDecimal.valueOf(entry.getValue())));
+        if (products == null || products.isEmpty()) {
+            return BigDecimal.ZERO;
         }
+
+        java.util.List<String> productIds = new java.util.ArrayList<>(products.keySet());
+
+        java.util.List<ProductDto> productsList = shoppingStoreClient.getProductsByIds(productIds);
+
+        java.util.Map<String, ProductDto> productsMap = productsList.stream()
+                .collect(java.util.stream.Collectors.toMap(ProductDto::getProductId, p -> p));
+
+        BigDecimal totalProductsPrice = BigDecimal.ZERO;
+
+        for (Map.Entry<String, Integer> entry : products.entrySet()) {
+            String productId = entry.getKey();
+            int quantity = entry.getValue();
+
+            ProductDto product = productsMap.get(productId);
+            if (product == null) {
+                throw new IllegalArgumentException("Товар с ID " + productId + " не найден в магазине при расчёте стоимости");
+            }
+
+            BigDecimal price = product.getPrice();
+            totalProductsPrice = totalProductsPrice.add(price.multiply(BigDecimal.valueOf(quantity)));
+        }
+
         return totalProductsPrice;
     }
+
 }

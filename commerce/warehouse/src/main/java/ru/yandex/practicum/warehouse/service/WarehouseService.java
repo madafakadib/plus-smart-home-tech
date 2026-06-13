@@ -140,6 +140,20 @@ public class WarehouseService {
             return;
         }
 
+        Set<String> productIds = products.entrySet().stream()
+                .filter(entry -> entry.getValue() > 0)
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toSet());
+
+        if (productIds.isEmpty()) {
+            return;
+        }
+
+        List<WarehouseProduct> existingProducts = warehouseRepository.findAllById(productIds);
+        Map<String, WarehouseProduct> productMap = existingProducts.stream()
+                .collect(Collectors.toMap(WarehouseProduct::getProductId, Function.identity()));
+
+        List<WarehouseProduct> productsToSave = new ArrayList<>();
         for (Map.Entry<String, Integer> entry : products.entrySet()) {
             String productId = entry.getKey();
             int returnQuantity = entry.getValue();
@@ -147,20 +161,21 @@ public class WarehouseService {
             if (returnQuantity <= 0) {
                 continue;
             }
-
-            WarehouseProduct product = warehouseRepository.findById(productId)
-                    .orElseGet(() -> WarehouseProduct.builder()
+            WarehouseProduct product = productMap.getOrDefault(productId,
+                    WarehouseProduct.builder()
                             .productId(productId)
                             .quantity(0L)
                             .dimension(new DimensionEmbeddable(0.0, 0.0, 0.0))
                             .weight(0.0)
                             .fragile(false)
-                            .build());
-
+                            .build()
+            );
             product.setQuantity(product.getQuantity() + returnQuantity);
-            warehouseRepository.save(product);
+            productsToSave.add(product);
         }
+        warehouseRepository.saveAll(productsToSave);
     }
+
 
     @Transactional
     public BookedProductsDto assembleProductsForOrder(WarehouseAssemblyRequest request) {
@@ -178,6 +193,9 @@ public class WarehouseService {
         Map<String, WarehouseProduct> warehouseProductMap = dbProducts.stream()
                 .collect(Collectors.toMap(WarehouseProduct::getProductId, java.util.function.Function.identity()));
 
+        List<WarehouseProduct> productsToSave = new ArrayList<>();
+        List<OrderBooking> bookingsToSave = new ArrayList<>();
+
         for (Map.Entry<String, Integer> item : request.getProducts().entrySet()) {
             String productId = item.getKey();
             Integer requestedQuantity = item.getValue();
@@ -191,7 +209,7 @@ public class WarehouseService {
             }
 
             product.setQuantity(product.getQuantity() - requestedQuantity);
-            warehouseRepository.save(product);
+            productsToSave.add(product);
 
             OrderBooking booking = OrderBooking.builder()
                     .id(UUID.randomUUID().toString())
@@ -199,7 +217,7 @@ public class WarehouseService {
                     .productId(productId)
                     .quantity(requestedQuantity)
                     .build();
-            orderBookingRepository.save(booking);
+            bookingsToSave.add(booking);
 
             totalWeight += product.getWeight() * requestedQuantity;
 
@@ -213,7 +231,11 @@ public class WarehouseService {
             }
         }
 
+        warehouseRepository.saveAll(productsToSave);
+        orderBookingRepository.saveAll(bookingsToSave);
+
         return new BookedProductsDto(totalWeight, totalVolume, hasFragile);
     }
+
 
 }
