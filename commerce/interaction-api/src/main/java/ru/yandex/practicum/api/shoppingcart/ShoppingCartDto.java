@@ -14,7 +14,6 @@ public class ShoppingCartDto {
     @NotNull(message = "Идентификатор корзины обязателен")
     private String shoppingCartId;
 
-
     @NotNull(message = "Список товаров не может быть null")
     private Map<String, Integer> products;
 }

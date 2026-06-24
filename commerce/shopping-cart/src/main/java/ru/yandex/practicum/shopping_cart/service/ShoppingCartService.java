@@ -3,6 +3,7 @@ package ru.yandex.practicum.shopping_cart.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.yandex.practicum.api.clients.WarehouseClient;
 import ru.yandex.practicum.api.shoppingcart.ChangeProductQuantityRequest;
 import ru.yandex.practicum.api.shoppingcart.ShoppingCartDto;
 import ru.yandex.practicum.shopping_cart.entity.CartItem;
@@ -18,13 +19,13 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class ShoppingCartService {
 
     private final ShoppingCartRepository shoppingCartRepository;
-    private final WarehouseServiceClient warehouseServiceClient;
+    private final WarehouseClient warehouseClient;
 
+    @Transactional(readOnly = true)
     public ShoppingCartDto getCart(String username) {
         ShoppingCart cart = shoppingCartRepository.findByUsername(username)
                 .orElseGet(() -> {
@@ -38,6 +39,15 @@ public class ShoppingCartService {
     }
 
     public ShoppingCartDto addItem(String username, Map<String, Integer> productsMap) {
+        ShoppingCartDto dto = saveItemsToDb(username, productsMap);
+
+        warehouseClient.checkAndBookProducts(dto);
+
+        return dto;
+    }
+
+    @Transactional
+    protected ShoppingCartDto saveItemsToDb(String username, Map<String, Integer> productsMap) {
         ShoppingCart cart = shoppingCartRepository.findByUsername(username)
                 .orElseGet(() -> {
                     ShoppingCart newCart = new ShoppingCart();
@@ -47,9 +57,11 @@ public class ShoppingCartService {
                 });
 
         for (Map.Entry<String, Integer> entry : productsMap.entrySet()) {
+            String productId = entry.getKey();
             Integer quantity = entry.getValue();
 
             Optional<CartItem> existingItem = cart.getItems().stream()
+                    .filter(item -> item.getProductId().equals(productId))
                     .findFirst();
 
             if (existingItem.isPresent()) {
@@ -58,7 +70,7 @@ public class ShoppingCartService {
             } else {
                 CartItem newItem = CartItem.builder()
                         .shoppingCart(cart)
-                        .productId(entry.getKey())
+                        .productId(productId)
                         .quantity(quantity)
                         .build();
                 cart.getItems().add(newItem);
@@ -66,14 +78,10 @@ public class ShoppingCartService {
         }
 
         ShoppingCart savedCart = shoppingCartRepository.save(cart);
-        ShoppingCartDto dto = Mapper.toDto(savedCart);
-
-        warehouseServiceClient.checkAndBookProducts(dto);
-
-        return dto;
+        return Mapper.toDto(savedCart);
     }
 
-
+    @Transactional
     public ShoppingCartDto removeItems(String username, List<String> productId) {
         ShoppingCart cart = shoppingCartRepository.findByUsername(username)
                 .orElseThrow(() -> new NotFoundCartException("Корзина пользователя не найдена"));
@@ -92,6 +100,15 @@ public class ShoppingCartService {
     }
 
     public ShoppingCartDto changeProductQuantity(String username, ChangeProductQuantityRequest changeProductQuantityRequest) {
+        ShoppingCartDto dto = updateQuantityInDb(username, changeProductQuantityRequest);
+
+        warehouseClient.checkAndBookProducts(dto);
+
+        return dto;
+    }
+
+    @Transactional
+    protected ShoppingCartDto updateQuantityInDb(String username, ChangeProductQuantityRequest changeProductQuantityRequest) {
         ShoppingCart cart = shoppingCartRepository.findByUsername(username)
                 .orElseThrow(() -> new NotFoundCartException("Корзина пользователя не найдена"));
 
@@ -103,13 +120,10 @@ public class ShoppingCartService {
         existingItem.setQuantity(changeProductQuantityRequest.getNewQuantity());
 
         ShoppingCart savedCart = shoppingCartRepository.save(cart);
-        ShoppingCartDto dto = Mapper.toDto(savedCart);
-
-        warehouseServiceClient.checkAndBookProducts(dto);
-
-        return dto;
+        return Mapper.toDto(savedCart);
     }
 
+    @Transactional
     public void deactivateCart(String username) {
         ShoppingCart cart = shoppingCartRepository.findByUsername(username)
                 .orElseThrow(() -> new NotFoundCartException("Корзина пользователя не найдена"));

@@ -6,6 +6,8 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.api.shoppingstore.*;
 import ru.yandex.practicum.shopping_store.service.ShoppingStoreService;
 
+import java.util.List;
+
 
 @RestController
 @RequestMapping("/api/v1/shopping-store")
@@ -50,5 +52,10 @@ public class ShoppingStoreController {
     @GetMapping(path = "/{productId}")
     public ProductDto getProductById(@PathVariable("productId") String productId) {
         return shoppingStoreService.getProductById(productId);
+    }
+
+    @GetMapping(path = "/products/batch")
+    public List<ProductDto> getProductsByIds(@RequestParam("ids") List<String> ids) {
+        return shoppingStoreService.findAllByIds(ids);
     }
 }

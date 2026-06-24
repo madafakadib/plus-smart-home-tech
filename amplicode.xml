@@ -22,6 +22,21 @@
           <package value="ru.yandex.practicum.warehouse" />
         </packages>
       </persistence-unit>
+      <persistence-unit moduleName="order" name="Default">
+        <packages>
+          <package value="ru.yandex.practicum.order" />
+        </packages>
+      </persistence-unit>
+      <persistence-unit moduleName="payment" name="Default">
+        <packages>
+          <package value="ru.yandex.practicum.payment" />
+        </packages>
+      </persistence-unit>
+      <persistence-unit moduleName="delivery" name="Default">
+        <packages>
+          <package value="ru.yandex.practicum.delivery" />
+        </packages>
+      </persistence-unit>
     </persistence-units>
   </component>
 </project>
